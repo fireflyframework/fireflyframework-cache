@@ -6,7 +6,7 @@ This guide will help you get started with the Firefly Common Cache Library in ju
 
 - Java 21 or higher
 - Maven 3.6+ or Gradle 7+
-- Spring Boot 3.2+
+- Spring Boot 3.5+
 
 ## Step 1: Add the Dependency
 
@@ -285,7 +285,7 @@ Now that you have the basics working, you can:
 **Problem**: Maven/Gradle dependency resolution errors.
 
 **Solution**:
-- Ensure you're using Spring Boot 3.2+
+- Ensure you're using Spring Boot 3.5+
 - Check that Java 21 is configured
 - Run `mvn dependency:tree` or `gradle dependencies` to identify conflicts
 

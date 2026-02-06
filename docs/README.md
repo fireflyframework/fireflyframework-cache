@@ -176,8 +176,8 @@ Designed for testability with mocking support. Guide in [Testing Guide](TESTING.
 ### Code Examples
 
 All code examples are tested and reflect the actual API. They use:
-- Java 21 syntax
-- Spring Boot 3.2+
+- Java 25 syntax (Java 21+ compatible)
+- Spring Boot 3.5+
 - Reactive programming with Reactor
 - Lombok for brevity
 
