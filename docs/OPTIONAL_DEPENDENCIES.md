@@ -46,8 +46,8 @@ This separation ensures that:
 **Maven Dependencies:**
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -74,8 +74,8 @@ firefly:
 **Maven Dependencies:**
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 

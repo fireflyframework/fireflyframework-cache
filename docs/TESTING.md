@@ -456,7 +456,7 @@ firefly:
 
 logging:
   level:
-    com.firefly.common.cache: DEBUG
+    org.fireflyframework.cache: DEBUG
 ```
 
 ### Test Configuration Class

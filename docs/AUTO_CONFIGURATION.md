@@ -32,7 +32,7 @@ The library uses Spring Boot 3.x auto-configuration mechanism:
 **File**: `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
 
 ```
-com.firefly.common.cache.config.CacheAutoConfiguration
+org.fireflyframework.cache.config.CacheAutoConfiguration
 ```
 
 ### What Gets Auto-Configured
@@ -288,8 +288,8 @@ Just add the dependency - no configuration needed:
 
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0</version>
 </dependency>
 ```
@@ -357,7 +357,7 @@ firefly:
 1. Check that `firefly.cache.enabled` is not set to `false`
 2. Verify the library is on the classpath
 3. Check for conflicting auto-configurations
-4. Enable debug logging: `logging.level.com.firefly.common.cache=DEBUG`
+4. Enable debug logging: `logging.level.org.fireflyframework.cache=DEBUG`
 
 ### Redis Not Connecting
 

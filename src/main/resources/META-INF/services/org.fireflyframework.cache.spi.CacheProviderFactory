@@ -1,0 +1,4 @@
+org.fireflyframework.cache.spi.providers.RedisProvider
+org.fireflyframework.cache.spi.providers.HazelcastProvider
+org.fireflyframework.cache.spi.providers.JCacheProvider
+org.fireflyframework.cache.spi.providers.CaffeineProvider

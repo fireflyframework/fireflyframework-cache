@@ -165,7 +165,7 @@ Designed for testability with mocking support. Guide in [Testing Guide](TESTING.
 ## 🔗 External Resources
 
 - [Main README](../README.md) - Project overview
-- [GitHub Repository](https://github.com/firefly-oss/lib-common-cache)
+- [GitHub Repository](https://github.org/fireflyframework-oss/fireflyframework-cache)
 - [Caffeine Documentation](https://github.com/ben-manes/caffeine)
 - [Redis Documentation](https://redis.io/documentation)
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)

@@ -363,9 +363,9 @@ management:
 ```yaml
 logging:
   level:
-    com.firefly.common.cache: INFO
-    com.firefly.common.cache.adapter: DEBUG
-    com.firefly.common.cache.manager: DEBUG
+    org.fireflyframework.cache: INFO
+    org.fireflyframework.cache.adapter: DEBUG
+    org.fireflyframework.cache.manager: DEBUG
 ```
 
 ### Log Levels

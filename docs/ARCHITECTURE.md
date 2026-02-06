@@ -78,7 +78,7 @@ Smart L1+L2 cache
 The main entry point is the `FireflyCacheManager` class:
 
 ```java
-package com.firefly.common.cache.manager;
+package org.fireflyframework.cache.manager;
 
 public class FireflyCacheManager implements CacheAdapter {
 
@@ -135,8 +135,8 @@ This ensures:
 **For Caffeine only (in-memory cache):**
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -144,8 +144,8 @@ This ensures:
 **For Caffeine + Redis (distributed cache):**
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 <dependency>
@@ -161,7 +161,7 @@ This ensures:
 ### 2. Inject FireflyCacheManager
 
 ```java
-import com.firefly.common.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -199,7 +199,7 @@ public class MyService {
 If you want to enable features only when the cache is available:
 
 ```java
-import com.firefly.common.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -215,21 +215,21 @@ public class MyConfiguration {
 }
 ```
 
-**Important:** Always use `com.firefly.common.cache.manager.FireflyCacheManager` (the concrete class) in `@ConditionalOnBean`.
+**Important:** Always use `org.fireflyframework.cache.manager.FireflyCacheManager` (the concrete class) in `@ConditionalOnBean`.
 
 ## Auto-Configuration
 
 The library provides two auto-configuration classes:
 
 ### 1. CacheAutoConfiguration (Always Loaded)
-- **Package:** `com.firefly.common.cache.config`
+- **Package:** `org.fireflyframework.cache.config`
 - **Provides:**
   - `CacheManagerFactory` bean (to create named cache instances)
   - `FireflyCacheManager` default bean (primary cache instance)
   - `CacheSerializer` bean (JSON serialization)
 
 ### 2. RedisCacheAutoConfiguration (Conditionally Loaded)
-- **Package:** `com.firefly.common.cache.config`
+- **Package:** `org.fireflyframework.cache.config`
 - **Condition:** Only loads when Redis classes are on classpath
 - **Provides:**
   - `ReactiveRedisConnectionFactory` bean
@@ -237,8 +237,8 @@ The library provides two auto-configuration classes:
 
 ### Provider SPI (Best-in-class extensibility)
 
-lib-common-cache exposes an SPI so new providers can be plugged in without modifying core code.
-- Interface: `com.firefly.common.cache.spi.CacheProviderFactory`
+fireflyframework-cache exposes an SPI so new providers can be plugged in without modifying core code.
+- Interface: `org.fireflyframework.cache.spi.CacheProviderFactory`
 - Discovery: Java ServiceLoader (`META-INF/services/...`)
 - Built-ins: Redis, Hazelcast, JCache, Caffeine
 - Selection: `AUTO` orders by provider priority (Redis > Hazelcast > JCache > Caffeine), with Caffeine fallback for distributed caches
@@ -297,7 +297,7 @@ firefly:
 
 ```java
 // Always use the full package name for clarity
-import com.firefly.common.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 
 // Inject the concrete class
 @Autowired
@@ -404,7 +404,7 @@ class MyIntegrationTest {
 
 1. **Always use the full package name**
    ```java
-   import com.firefly.common.cache.manager.FireflyCacheManager;
+   import org.fireflyframework.cache.manager.FireflyCacheManager;
    ```
 
 2. **Use `@ConditionalOnBean` for optional features**
@@ -433,8 +433,8 @@ class MyIntegrationTest {
 
 ## Summary
 
-- ✅ **Public API:** `com.firefly.common.cache.manager.FireflyCacheManager`
-- ✅ **Internal API:** `com.firefly.common.cache.core.CacheAdapter`
+- ✅ **Public API:** `org.fireflyframework.cache.manager.FireflyCacheManager`
+- ✅ **Internal API:** `org.fireflyframework.cache.core.CacheAdapter`
 - ✅ **Single cache instance:** One cache per application
 - ✅ **Automatic fallback:** Primary/fallback pattern built-in
 - ✅ **Consistent key format:** `keyPrefix:cacheName:key`

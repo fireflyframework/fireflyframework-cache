@@ -1,0 +1,195 @@
+/*
+ * Copyright 2024-2026 Firefly Software Solutions Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.fireflyframework.cache.config;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheAdapter;
+import org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig;
+import org.fireflyframework.cache.core.CacheAdapter;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.properties.CacheProperties;
+import org.fireflyframework.cache.serialization.CacheSerializer;
+import org.fireflyframework.cache.serialization.JsonCacheSerializer;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.annotation.EnableAsync;
+
+/**
+ * Core auto-configuration for the Firefly Cache library.
+ * <p>
+ * This configuration class automatically sets up the cache library when included
+ * in a Spring Boot application. It enables configuration properties, sets up
+ * component scanning, and provides default beans where needed.
+ * <p>
+ * Components automatically discovered and configured:
+ * <ul>
+ *   <li>Caffeine cache adapter (always available)</li>
+ *   <li>Cache manager with selection strategy</li>
+ *   <li>Serialization support</li>
+ *   <li>Health indicators for Spring Boot Actuator</li>
+ *   <li>Metrics collection via Micrometer</li>
+ * </ul>
+ * <p>
+ * <b>Note:</b> Redis support is optional and configured separately in
+ * {@link RedisCacheAutoConfiguration} when Redis dependencies are present.
+ *
+ * @see RedisCacheAutoConfiguration
+ */
+@AutoConfiguration
+@ConditionalOnProperty(prefix = "firefly.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
+@EnableConfigurationProperties(CacheProperties.class)
+@ComponentScan(basePackages = "org.fireflyframework.cache")
+@EnableAsync
+@Slf4j
+public class CacheAutoConfiguration {
+
+    // No-arg constructor
+
+    /**
+     * Provides a default ObjectMapper for JSON serialization if none exists.
+     */
+    @Bean("cacheObjectMapper")
+    @ConditionalOnMissingBean(name = "cacheObjectMapper")
+    public ObjectMapper cacheObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
+
+    /**
+     * Provides a default JSON cache serializer.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public CacheSerializer cacheSerializer(@Qualifier("cacheObjectMapper") ObjectMapper objectMapper) {
+        log.debug("Creating JSON cache serializer");
+        return new JsonCacheSerializer(objectMapper);
+    }
+
+    /**
+     * Creates the CacheManagerFactory that can create multiple independent cache managers.
+     * <p>
+     * This factory is used by other modules (like fireflyframework-web, microservices, etc.) to create
+     * their own cache managers with independent configurations and key prefixes.
+     * <p>
+     * This version is used when Redis dependencies are available on the classpath.
+     */
+    @Bean
+    @ConditionalOnClass(name = "org.springframework.data.redis.connection.ReactiveRedisConnectionFactory")
+    @ConditionalOnMissingBean
+    public org.fireflyframework.cache.factory.CacheManagerFactory cacheManagerFactoryWithRedis(
+            CacheProperties properties,
+            @Qualifier("cacheObjectMapper") ObjectMapper objectMapper,
+            org.springframework.beans.factory.ObjectProvider<org.springframework.data.redis.connection.ReactiveRedisConnectionFactory> redisConnectionFactoryProvider,
+            org.springframework.context.ApplicationContext applicationContext) {
+        log.info("Creating CacheManagerFactory (with Redis support)");
+        org.springframework.data.redis.connection.ReactiveRedisConnectionFactory redisConnectionFactory =
+                redisConnectionFactoryProvider.getIfAvailable();
+
+        // Resolve optional HazelcastInstance via reflection
+        Object hazelcastInstance = null;
+        try {
+            Class<?> hzClazz = Class.forName("com.hazelcast.core.HazelcastInstance");
+            hazelcastInstance = applicationContext.getBeanProvider(hzClazz).getIfAvailable();
+        } catch (ClassNotFoundException ignored) { }
+
+        // Resolve optional JCache CacheManager (javax or jakarta)
+        Object jcacheManager = null;
+        try {
+            Class<?> jcacheClazz;
+            try {
+                jcacheClazz = Class.forName("javax.cache.CacheManager");
+            } catch (ClassNotFoundException ex) {
+                jcacheClazz = Class.forName("jakarta.cache.CacheManager");
+            }
+            jcacheManager = applicationContext.getBeanProvider(jcacheClazz).getIfAvailable();
+        } catch (ClassNotFoundException ignored) { }
+
+        return new org.fireflyframework.cache.factory.CacheManagerFactory(
+                properties,
+                objectMapper,
+                redisConnectionFactory,
+                hazelcastInstance,
+                jcacheManager
+        );
+    }
+
+    /**
+     * Creates the CacheManagerFactory that can create multiple independent cache managers.
+     * <p>
+     * This version is used when Redis dependencies are NOT available, providing Caffeine-only support.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public org.fireflyframework.cache.factory.CacheManagerFactory cacheManagerFactoryCaffeineOnly(
+            CacheProperties properties,
+            @Qualifier("cacheObjectMapper") ObjectMapper objectMapper,
+            org.springframework.context.ApplicationContext applicationContext) {
+        log.info("Creating CacheManagerFactory (Caffeine-only, Redis not available)");
+
+        // Resolve optional HazelcastInstance via reflection
+        Object hazelcastInstance = null;
+        try {
+            Class<?> hzClazz = Class.forName("com.hazelcast.core.HazelcastInstance");
+            hazelcastInstance = applicationContext.getBeanProvider(hzClazz).getIfAvailable();
+        } catch (ClassNotFoundException ignored) { }
+
+        // Resolve optional JCache CacheManager (javax or jakarta)
+        Object jcacheManager = null;
+        try {
+            Class<?> jcacheClazz;
+            try {
+                jcacheClazz = Class.forName("javax.cache.CacheManager");
+            } catch (ClassNotFoundException ex) {
+                jcacheClazz = Class.forName("jakarta.cache.CacheManager");
+            }
+            jcacheManager = applicationContext.getBeanProvider(jcacheClazz).getIfAvailable();
+        } catch (ClassNotFoundException ignored) { }
+
+        return new org.fireflyframework.cache.factory.CacheManagerFactory(
+                properties,
+                objectMapper,
+                null,  // No Redis support
+                hazelcastInstance,
+                jcacheManager
+        );
+    }
+
+    /**
+     * Creates a default FireflyCacheManager bean using the factory.
+     * <p>
+     * This provides a default cache manager that applications can use out of the box.
+     * Applications can also inject the CacheManagerFactory to create additional cache managers.
+     */
+    @Bean
+    @Primary
+    @ConditionalOnMissingBean
+    public FireflyCacheManager fireflyCacheManager(org.fireflyframework.cache.factory.CacheManagerFactory factory) {
+        log.info("Creating default FireflyCacheManager");
+        return factory.createDefaultCacheManager("default");
+    }
+
+}

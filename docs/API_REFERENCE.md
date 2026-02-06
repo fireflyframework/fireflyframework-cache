@@ -13,7 +13,7 @@ Complete API reference for the Firefly Common Cache Library.
 
 ## FireflyCacheManager
 
-**Package**: `com.firefly.common.cache.manager.FireflyCacheManager`
+**Package**: `org.fireflyframework.cache.manager.FireflyCacheManager`
 
 The main entry point for cache operations. Manages multiple cache instances and provides a unified API.
 
@@ -316,7 +316,7 @@ public void cleanup() {
 
 ## CacheAdapter
 
-**Package**: `com.firefly.common.cache.core.CacheAdapter`
+**Package**: `org.fireflyframework.cache.core.CacheAdapter`
 
 Interface defining cache operations. Implemented by cache providers.
 
@@ -364,7 +364,7 @@ void close()
 
 ## Annotations
 
-**Package**: `com.firefly.common.cache.annotation`
+**Package**: `org.fireflyframework.cache.annotation`
 
 > **Note**: Annotations are defined but aspect implementation is not yet complete. Use programmatic API for production.
 
@@ -514,7 +514,7 @@ public Mono<Void> deleteUser(User user) {
 
 ### CacheProperties
 
-**Package**: `com.firefly.common.cache.properties.CacheProperties`
+**Package**: `org.fireflyframework.cache.properties.CacheProperties`
 
 Main configuration properties class.
 
@@ -534,7 +534,7 @@ public class CacheProperties {
 
 ### CaffeineCacheConfig
 
-**Package**: `com.firefly.common.cache.adapter.caffeine.CaffeineCacheConfig`
+**Package**: `org.fireflyframework.cache.adapter.caffeine.CaffeineCacheConfig`
 
 Caffeine cache configuration.
 
@@ -554,7 +554,7 @@ public class CaffeineCacheConfig {
 
 ### RedisCacheConfig
 
-**Package**: `com.firefly.common.cache.adapter.redis.RedisCacheConfig`
+**Package**: `org.fireflyframework.cache.adapter.redis.RedisCacheConfig`
 
 Redis cache configuration.
 
@@ -580,7 +580,7 @@ public class RedisCacheConfig {
 
 ### CacheHealth
 
-**Package**: `com.firefly.common.cache.core.CacheHealth`
+**Package**: `org.fireflyframework.cache.core.CacheHealth`
 
 Cache health information.
 
@@ -599,7 +599,7 @@ public class CacheHealth {
 
 ### CacheStats
 
-**Package**: `com.firefly.common.cache.core.CacheStats`
+**Package**: `org.fireflyframework.cache.core.CacheStats`
 
 Cache statistics.
 
@@ -625,7 +625,7 @@ public class CacheStats {
 
 ### CacheException
 
-**Package**: `com.firefly.common.cache.exception.CacheException`
+**Package**: `org.fireflyframework.cache.exception.CacheException`
 
 Base exception for cache operations.
 
@@ -638,7 +638,7 @@ public class CacheException extends RuntimeException {
 
 ### SerializationException
 
-**Package**: `com.firefly.common.cache.serialization.SerializationException`
+**Package**: `org.fireflyframework.cache.serialization.SerializationException`
 
 Exception for serialization errors.
 

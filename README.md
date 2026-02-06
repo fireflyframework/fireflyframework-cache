@@ -72,8 +72,8 @@ A unified, hexagonal caching library with pluggable providers (Caffeine, Redis, 
 **For Caffeine-only (in-memory caching):**
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -81,8 +81,8 @@ A unified, hexagonal caching library with pluggable providers (Caffeine, Redis, 
 **For Caffeine + Redis (distributed caching):**
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 
@@ -314,7 +314,7 @@ Webhook Microservice
 │   ├── Prefix: "firefly:http:idempotency"
 │   ├── TTL: 24 hours
 │   ├── Purpose: Prevent duplicate HTTP requests
-│   └── Auto-configured by lib-common-web
+│   └── Auto-configured by fireflyframework-web
 │
 ├── webhookIdempotencyCacheManager
 │   ├── Provider: Redis (primary) → Caffeine (fallback)
@@ -592,12 +592,12 @@ class CacheIntegrationTest {
 
 ### Using FireflyCacheManager in Other Libraries
 
-The library is designed to be used as a dependency in other Firefly libraries (e.g., `lib-common-cqrs`).
+The library is designed to be used as a dependency in other Firefly libraries (e.g., `fireflyframework-cqrs`).
 
 #### Correct Bean Matching
 
 ```java
-import com.firefly.common.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 
 @Configuration
 public class MyConfiguration {
@@ -732,7 +732,7 @@ If you're migrating from Spring's `@Cacheable`:
 ```yaml
 logging:
   level:
-    com.firefly.common.cache: DEBUG
+    org.fireflyframework.cache: DEBUG
 ```
 
 ## 📚 Documentation

@@ -16,8 +16,8 @@ Add the following dependency to your `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>com.firefly</groupId>
-    <artifactId>lib-common-cache</artifactId>
+    <groupId>org.fireflyframework</groupId>
+    <artifactId>fireflyframework-cache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -27,7 +27,7 @@ Add the following dependency to your `pom.xml`:
 Add the following to your `build.gradle`:
 
 ```gradle
-implementation 'com.firefly:lib-common-cache:1.0.0-SNAPSHOT'
+implementation 'org.fireflyframework:fireflyframework-cache:1.0.0-SNAPSHOT'
 ```
 
 ## Step 2: Enable Caching
@@ -37,7 +37,7 @@ Add the `@EnableCaching` annotation to your Spring Boot application:
 ```java
 package com.example.myapp;
 
-import com.firefly.common.cache.annotation.EnableCaching;
+import org.fireflyframework.cache.annotation.EnableCaching;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -79,7 +79,7 @@ Inject `FireflyCacheManager` and use it directly:
 ```java
 package com.example.myapp.service;
 
-import com.firefly.common.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -170,7 +170,7 @@ Create a simple test:
 ```java
 package com.example.myapp;
 
-import com.firefly.common.cache.manager.FireflyCacheManager;
+import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
