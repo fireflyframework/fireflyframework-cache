@@ -1,4 +1,6 @@
 # Firefly Common Cache Library
+    
+[![CI](https://github.com/fireflyframework/fireflyframework-cache/actions/workflows/ci.yml/badge.svg)](https://github.com/fireflyframework/fireflyframework-cache/actions/workflows/ci.yml)
 
 [![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-green.svg)](https://spring.io/projects/spring-boot)
