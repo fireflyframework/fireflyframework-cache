@@ -43,7 +43,7 @@ class CacheAutoConfigurationRedisIntegrationTest {
             .withReuse(true);
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class, RedisCacheAutoConfiguration.class));
 
     @Test
     void shouldCreateRedisBeansWhenRedisIsConfigured() {
