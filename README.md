@@ -54,7 +54,7 @@ The `FireflyCacheManager` orchestrates cache operations across providers, while 
 <dependency>
     <groupId>org.fireflyframework</groupId>
     <artifactId>fireflyframework-cache</artifactId>
-    <version>26.02.03</version>
+    <version>26.02.04</version>
 </dependency>
 ```
 
