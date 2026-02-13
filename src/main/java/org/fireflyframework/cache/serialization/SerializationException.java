@@ -16,10 +16,12 @@
 
 package org.fireflyframework.cache.serialization;
 
+import org.fireflyframework.cache.exception.CacheException;
+
 /**
  * Exception thrown when cache serialization or deserialization fails.
  */
-public class SerializationException extends RuntimeException {
+public class SerializationException extends CacheException {
 
     public SerializationException(String message) {
         super(message);
