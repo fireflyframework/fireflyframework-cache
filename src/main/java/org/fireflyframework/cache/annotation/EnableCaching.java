@@ -16,9 +16,6 @@
 
 package org.fireflyframework.cache.annotation;
 
-import org.fireflyframework.cache.config.CacheAutoConfiguration;
-import org.springframework.context.annotation.Import;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,6 +28,10 @@ import java.lang.annotation.Target;
  * support for Firefly cache annotations like {@link Cacheable}, {@link CacheEvict},
  * and {@link CachePut}.
  * <p>
+ * Note: The actual auto-configuration is registered via
+ * {@code META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports}.
+ * This annotation serves as a marker only.
+ * <p>
  * Example usage:
  * <pre>
  * &#64;Configuration
@@ -42,7 +43,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import(CacheAutoConfiguration.class)
 public @interface EnableCaching {
 
     /**
