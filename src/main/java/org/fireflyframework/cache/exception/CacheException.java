@@ -1,12 +1,14 @@
 package org.fireflyframework.cache.exception;
 
+import org.fireflyframework.kernel.exception.FireflyInfrastructureException;
+
 /**
  * Base exception for all cache-related errors.
  *
  * @author Firefly Team
  * @since 1.0.0
  */
-public class CacheException extends RuntimeException {
+public class CacheException extends FireflyInfrastructureException {
 
     public CacheException(String message) {
         super(message);
@@ -17,6 +19,6 @@ public class CacheException extends RuntimeException {
     }
 
     public CacheException(Throwable cause) {
-        super(cause);
+        super(cause.getMessage(), cause);
     }
 }
