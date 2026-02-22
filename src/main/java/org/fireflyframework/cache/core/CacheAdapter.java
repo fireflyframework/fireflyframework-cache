@@ -122,6 +122,32 @@ public interface CacheAdapter {
     Mono<Void> clear();
 
     /**
+     * Evicts all cache entries whose keys start with the given prefix.
+     * <p>
+     * Default implementation scans all keys and evicts matching ones.
+     * Cache implementations (e.g., Redis) should override this with
+     * native pattern-based eviction for better performance.
+     *
+     * @param keyPrefix the key prefix to match
+     * @return a Mono containing the number of evicted entries
+     */
+    default Mono<Long> evictByPrefix(String keyPrefix) {
+        return this.<String>keys()
+            .flatMap(allKeys -> {
+                var matching = allKeys.stream()
+                    .filter(k -> k.toString().startsWith(keyPrefix))
+                    .toList();
+                if (matching.isEmpty()) {
+                    return Mono.just(0L);
+                }
+                return reactor.core.publisher.Flux.fromIterable(matching)
+                    .flatMap(this::evict)
+                    .filter(Boolean::booleanValue)
+                    .count();
+            });
+    }
+
+    /**
      * Checks if a key exists in the cache.
      *
      * @param key the cache key

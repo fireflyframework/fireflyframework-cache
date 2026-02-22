@@ -188,6 +188,57 @@ class CaffeineCacheAdapterTest {
     }
 
     @Test
+    void shouldEvictByPrefix() {
+        // Given - store entries with different prefixes
+        StepVerifier.create(cacheAdapter.put("user:1", "alice"))
+                .verifyComplete();
+        StepVerifier.create(cacheAdapter.put("user:2", "bob"))
+                .verifyComplete();
+        StepVerifier.create(cacheAdapter.put("session:abc", "data1"))
+                .verifyComplete();
+        StepVerifier.create(cacheAdapter.put("session:def", "data2"))
+                .verifyComplete();
+
+        // When & Then - evict all "session:" entries
+        StepVerifier.create(cacheAdapter.evictByPrefix("session:"))
+                .assertNext(count -> assertThat(count).isEqualTo(2))
+                .verifyComplete();
+
+        // "user:" entries should remain
+        StepVerifier.create(cacheAdapter.exists("user:1"))
+                .assertNext(result -> assertThat(result).isTrue())
+                .verifyComplete();
+        StepVerifier.create(cacheAdapter.exists("user:2"))
+                .assertNext(result -> assertThat(result).isTrue())
+                .verifyComplete();
+
+        // "session:" entries should be gone
+        StepVerifier.create(cacheAdapter.exists("session:abc"))
+                .assertNext(result -> assertThat(result).isFalse())
+                .verifyComplete();
+        StepVerifier.create(cacheAdapter.exists("session:def"))
+                .assertNext(result -> assertThat(result).isFalse())
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnZeroWhenEvictByPrefixMatchesNothing() {
+        // Given
+        StepVerifier.create(cacheAdapter.put("key1", "value1"))
+                .verifyComplete();
+
+        // When & Then
+        StepVerifier.create(cacheAdapter.evictByPrefix("nonexistent:"))
+                .assertNext(count -> assertThat(count).isEqualTo(0))
+                .verifyComplete();
+
+        // Original entry should remain
+        StepVerifier.create(cacheAdapter.exists("key1"))
+                .assertNext(result -> assertThat(result).isTrue())
+                .verifyComplete();
+    }
+
+    @Test
     void shouldReturnCacheKeys() {
         // Given
         String key1 = "key1";
