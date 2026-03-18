@@ -28,7 +28,7 @@ public class JCacheProvider implements CacheProviderFactory {
             try { cm = Class.forName("javax.cache.CacheManager"); }
             catch (ClassNotFoundException ex) { cm = Class.forName("jakarta.cache.CacheManager"); }
             var m = helperClass.getMethod("createJCacheAdapter",
-                    String.class, String.class, Duration.class, cm);
+                    String.class, String.class, Duration.class, Object.class);
             return (CacheAdapter) m.invoke(null, cacheName, keyPrefix, defaultTtl, ctx.jcacheManager);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to create JCache cache via SPI", e);

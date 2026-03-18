@@ -168,24 +168,47 @@ public CacheManagerFactory(CacheProperties properties,
             resolvedType = selectBestProviderType();
         }
 
-        CacheAdapter primaryCache;
+        CacheAdapter primaryCache = null;
         CacheAdapter fallbackCache = null;
 
         // Prefer SPI providers if available
         var ctx = new org.fireflyframework.cache.spi.CacheProviderFactory.ProviderContext(
                 properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager);
         var provider = findProvider(resolvedType);
+        boolean providerCreated = false;
         if (provider != null && provider.isAvailable(ctx)) {
-            primaryCache = provider.create(cacheName, keyPrefix, defaultTtl, ctx);
-        } else {
+            try {
+                primaryCache = provider.create(cacheName, keyPrefix, defaultTtl, ctx);
+                providerCreated = true;
+            } catch (Exception e) {
+                log.warn("SPI provider {} failed for cache '{}': {}. Falling back.", resolvedType, cacheName, e.getMessage());
+                primaryCache = null;
+            }
+        }
+        if (!providerCreated) {
+            primaryCache = null;
+        }
+        if (primaryCache == null) {
             // Fallback to built-in creation methods (backward compatibility)
             if (resolvedType == CacheType.REDIS && redisEnabled) {
                 primaryCache = createRedisCacheAdapterViaReflection(cacheName, keyPrefix, defaultTtl);
             } else if (resolvedType == CacheType.HAZELCAST && hazelcastAvailable) {
                 primaryCache = createHazelcastCacheAdapterViaReflection(cacheName, keyPrefix, defaultTtl);
             } else if (resolvedType == CacheType.JCACHE && jcacheAvailable) {
-                primaryCache = createJCacheAdapterViaReflection(cacheName, keyPrefix, defaultTtl);
+                try {
+                    primaryCache = createJCacheAdapterViaReflection(cacheName, keyPrefix, defaultTtl);
+                } catch (Exception e2) {
+                    log.warn("Built-in JCache creation also failed for cache '{}': {}. Falling back to Caffeine.", cacheName, e2.getMessage());
+                    if (caffeineEnabled) {
+                        primaryCache = createCaffeineCacheAdapter(cacheName, keyPrefix, defaultTtl);
+                    } else {
+                        throw e2;
+                    }
+                }
             } else if (resolvedType == CacheType.CAFFEINE && caffeineEnabled) {
+                primaryCache = createCaffeineCacheAdapter(cacheName, keyPrefix, defaultTtl);
+            } else if (caffeineEnabled) {
+                log.warn("Requested cache type {} not available for cache '{}', falling back to Caffeine", resolvedType, cacheName);
                 primaryCache = createCaffeineCacheAdapter(cacheName, keyPrefix, defaultTtl);
             } else {
                 throw new IllegalStateException(String.format("Cannot create cache of type %s: provider not available or not enabled", resolvedType));
@@ -364,7 +387,7 @@ public CacheManagerFactory(CacheProperties properties,
                 String.class,
                 String.class,
                 Duration.class,
-                cacheManagerClass
+                Object.class
             );
 
             return (CacheAdapter) createMethod.invoke(
