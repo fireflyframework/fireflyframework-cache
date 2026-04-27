@@ -86,22 +86,28 @@ public class JCacheCacheHelper {
                 Class<?> cmClass;
                 Class<?> cacheClass;
                 Class<?> mutableCfgClass;
+                Class<?> cfgClass;
                 boolean isJavax;
                 try {
                     cmClass = Class.forName("javax.cache.CacheManager", false, cl);
                     cacheClass = Class.forName("javax.cache.Cache", false, cl);
                     mutableCfgClass = Class.forName("javax.cache.configuration.MutableConfiguration", false, cl);
+                    cfgClass = Class.forName("javax.cache.configuration.Configuration", false, cl);
                     isJavax = true;
                 } catch (ClassNotFoundException ex) {
                     cmClass = Class.forName("jakarta.cache.CacheManager", false, cl);
                     cacheClass = Class.forName("jakarta.cache.Cache", false, cl);
                     mutableCfgClass = Class.forName("jakarta.cache.configuration.MutableConfiguration", false, cl);
+                    cfgClass = Class.forName("jakarta.cache.configuration.Configuration", false, cl);
                     isJavax = false;
                 }
                 this.javaxNamespace = isJavax;
 
                 this.getCacheMethod = cmClass.getMethod("getCache", String.class);
-                this.createCacheMethod = cmClass.getMethod("createCache", String.class, mutableCfgClass);
+                // JSR-107 CacheManager#createCache(String, Configuration) — declared parameter is the
+                // Configuration interface. Class.getMethod requires exact parameter types and does not
+                // match supertypes, so looking up MutableConfiguration here would throw NoSuchMethodException.
+                this.createCacheMethod = cmClass.getMethod("createCache", String.class, cfgClass);
 
                 this.getValueMethod = cacheClass.getMethod("get", Object.class);
                 this.putValueMethod = cacheClass.getMethod("put", Object.class, Object.class);
