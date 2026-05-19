@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -51,12 +52,13 @@ public class CacheObservabilityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "cacheHealthIndicator")
-    @ConditionalOnBean({HealthIndicator.class, CacheAdapter.class})
+    @ConditionalOnBean(HealthIndicator.class)
+    @ConditionalOnSingleCandidate(CacheAdapter.class)
     @ConditionalOnProperty(prefix = "firefly.observability.health", name = "enabled",
             havingValue = "true", matchIfMissing = true)
     HealthIndicator cacheHealthIndicator(ObjectProvider<FireflyCacheManager> managerProvider,
                                          ObjectProvider<CacheAdapter> adapterProvider) {
-        CacheAdapter adapter = adapterProvider.getIfAvailable();
+        CacheAdapter adapter = adapterProvider.getIfUnique();
         FireflyCacheManager manager = managerProvider.getIfAvailable();
         String adapterName = manager != null ? "firefly" : "cache";
         return new CacheHealthIndicator(adapter, adapterName);
