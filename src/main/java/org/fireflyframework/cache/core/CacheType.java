@@ -69,6 +69,11 @@ public enum CacheType {
     JCACHE("jcache", "JCache (JSR-107) Cache"),
 
     /**
+     * PostgreSQL-backed distributed cache with persistence.
+     */
+    POSTGRES("postgres", "PostgreSQL Distributed Cache"),
+
+    /**
      * No-operation cache - Disables caching.
      * <p>
      * Characteristics:
@@ -126,7 +131,7 @@ public enum CacheType {
      * @return true if this is a distributed cache type
      */
     public boolean isDistributed() {
-        return this == REDIS;
+        return this == REDIS || this == POSTGRES;
     }
 
     /**
@@ -135,7 +140,7 @@ public enum CacheType {
      * @return true if this cache type can persist data
      */
     public boolean supportsPersistence() {
-        return this == REDIS;
+        return this == REDIS || this == POSTGRES;
     }
 
     /**

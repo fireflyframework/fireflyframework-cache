@@ -16,39 +16,28 @@
 
 package org.fireflyframework.cache.config;
 
-import org.fireflyframework.cache.core.CacheAdapter;
 import org.fireflyframework.cache.core.CacheType;
 import org.fireflyframework.cache.manager.FireflyCacheManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for CacheAutoConfiguration without Redis on the classpath.
+ * Tests for the core {@link CacheAutoConfiguration} default (Caffeine-only) wiring.
  * <p>
- * This test verifies that the library works correctly when Redis dependencies
- * are not available, ensuring Redis is truly optional.
+ * The core module ships no distributed providers (Redis/Hazelcast/JCache/Postgres) on
+ * its classpath, so the default cache manager must wire to Caffeine. These tests verify
+ * that the library works correctly out of the box without referencing any provider type.
  */
-class CacheAutoConfigurationWithoutRedisTest {
+class CacheAutoConfigurationCaffeineDefaultTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(
-                    CacheAutoConfiguration.class,
-                    RedisCacheAutoConfiguration.class
-            ))
-            // Simulate Redis not being on the classpath
-            .withClassLoader(new FilteredClassLoader(
-                    ReactiveRedisTemplate.class,
-                    org.springframework.data.redis.connection.ReactiveRedisConnectionFactory.class,
-                    io.lettuce.core.RedisClient.class
-            ));
+            .withConfiguration(AutoConfigurations.of(CacheAutoConfiguration.class));
 
     @Test
-    void shouldStartWithoutRedis() {
+    void shouldStartWithCaffeineDefault() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
             assertThat(context).hasSingleBean(FireflyCacheManager.class);
@@ -56,11 +45,12 @@ class CacheAutoConfigurationWithoutRedisTest {
     }
 
     @Test
-    void shouldOnlyCreateCaffeineCacheWhenRedisNotAvailable() {
+    void shouldCreateCaffeineCacheManagerByDefault() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
 
-            // Should have FireflyCacheManager
+            // The default fireflyCacheManager bean must be present and Caffeine-backed.
+            assertThat(context).hasBean("fireflyCacheManager");
             assertThat(context).hasSingleBean(FireflyCacheManager.class);
 
             FireflyCacheManager manager = context.getBean(FireflyCacheManager.class);
@@ -70,11 +60,11 @@ class CacheAutoConfigurationWithoutRedisTest {
     }
 
     @Test
-    void shouldNotCreateRedisBeansWhenRedisNotAvailable() {
+    void shouldNotCreateRedisBeans() {
         this.contextRunner.run(context -> {
             assertThat(context).hasNotFailed();
-            
-            // Should NOT have Redis beans
+
+            // No distributed-provider beans should exist in the core-only classpath.
             assertThat(context).doesNotHaveBean("redisConnectionFactory");
             assertThat(context).doesNotHaveBean("reactiveRedisTemplate");
             assertThat(context).doesNotHaveBean("redisCacheAdapter");
@@ -103,7 +93,7 @@ class CacheAutoConfigurationWithoutRedisTest {
                 .withPropertyValues("firefly.cache.enabled=false")
                 .run(context -> {
                     assertThat(context).hasNotFailed();
-                    
+
                     // Should NOT have cache manager when disabled
                     assertThat(context).doesNotHaveBean(FireflyCacheManager.class);
                 });
@@ -148,4 +138,3 @@ class CacheAutoConfigurationWithoutRedisTest {
         });
     }
 }
-

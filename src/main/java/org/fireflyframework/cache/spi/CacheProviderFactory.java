@@ -41,17 +41,28 @@ public interface CacheProviderFactory {
         public final Object redisConnectionFactory; // ReactiveRedisConnectionFactory
         public final Object hazelcastInstance;      // HazelcastInstance
         public final Object jcacheManager;          // javax/jakarta CacheManager
+        public final Object r2dbcConnectionFactory; // io.r2dbc.spi.ConnectionFactory (Postgres)
 
         public ProviderContext(CacheProperties properties,
                                ObjectMapper objectMapper,
                                Object redisConnectionFactory,
                                Object hazelcastInstance,
                                Object jcacheManager) {
+            this(properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, null);
+        }
+
+        public ProviderContext(CacheProperties properties,
+                               ObjectMapper objectMapper,
+                               Object redisConnectionFactory,
+                               Object hazelcastInstance,
+                               Object jcacheManager,
+                               Object r2dbcConnectionFactory) {
             this.properties = properties;
             this.objectMapper = objectMapper;
             this.redisConnectionFactory = redisConnectionFactory;
             this.hazelcastInstance = hazelcastInstance;
             this.jcacheManager = jcacheManager;
+            this.r2dbcConnectionFactory = r2dbcConnectionFactory;
         }
     }
 }

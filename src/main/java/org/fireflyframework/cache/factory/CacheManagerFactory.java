@@ -64,6 +64,7 @@ public class CacheManagerFactory {
     private final Object redisConnectionFactory; // Use Object to avoid loading Redis classes
     private final Object hazelcastInstance;      // Optional HazelcastInstance
     private final Object jcacheManager;          // Optional JCache CacheManager
+    private final Object r2dbcConnectionFactory; // Optional R2DBC ConnectionFactory (Postgres)
     private final boolean redisAvailable;
     private final boolean hazelcastAvailable;
     private final boolean jcacheAvailable;
@@ -74,17 +75,39 @@ public class CacheManagerFactory {
      * @param properties the global cache properties
      * @param objectMapper the object mapper for serialization
      * @param redisConnectionFactory optional Redis connection factory (can be null)
+     * @param hazelcastInstance optional Hazelcast instance (can be null)
+     * @param jcacheManager optional JCache CacheManager (can be null)
      */
-public CacheManagerFactory(CacheProperties properties,
+    public CacheManagerFactory(CacheProperties properties,
                                 ObjectMapper objectMapper,
                                 Object redisConnectionFactory,
                                 Object hazelcastInstance,
                                 Object jcacheManager) {
+        this(properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, null);
+    }
+
+    /**
+     * Creates a new CacheManagerFactory.
+     *
+     * @param properties the global cache properties
+     * @param objectMapper the object mapper for serialization
+     * @param redisConnectionFactory optional Redis connection factory (can be null)
+     * @param hazelcastInstance optional Hazelcast instance (can be null)
+     * @param jcacheManager optional JCache CacheManager (can be null)
+     * @param r2dbcConnectionFactory optional R2DBC ConnectionFactory for Postgres (can be null)
+     */
+    public CacheManagerFactory(CacheProperties properties,
+                                ObjectMapper objectMapper,
+                                Object redisConnectionFactory,
+                                Object hazelcastInstance,
+                                Object jcacheManager,
+                                Object r2dbcConnectionFactory) {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.redisConnectionFactory = redisConnectionFactory;
         this.hazelcastInstance = hazelcastInstance;
         this.jcacheManager = jcacheManager;
+        this.r2dbcConnectionFactory = r2dbcConnectionFactory;
         this.redisAvailable = checkRedisAvailable();
         this.hazelcastAvailable = checkHazelcastAvailable();
         this.jcacheAvailable = checkJCacheAvailable();
@@ -173,7 +196,7 @@ public CacheManagerFactory(CacheProperties properties,
 
         // Prefer SPI providers if available
         var ctx = new org.fireflyframework.cache.spi.CacheProviderFactory.ProviderContext(
-                properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager);
+                properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, r2dbcConnectionFactory);
         var provider = findProvider(resolvedType);
         boolean providerCreated = false;
         if (provider != null && provider.isAvailable(ctx)) {
@@ -295,7 +318,7 @@ public CacheManagerFactory(CacheProperties properties,
     private CacheType selectBestProviderType() {
         for (var factory : providerFactories) {
             var ctx = new org.fireflyframework.cache.spi.CacheProviderFactory.ProviderContext(
-                    properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager);
+                    properties, objectMapper, redisConnectionFactory, hazelcastInstance, jcacheManager, r2dbcConnectionFactory);
             if (factory.isAvailable(ctx)) {
                 return factory.getType();
             }
