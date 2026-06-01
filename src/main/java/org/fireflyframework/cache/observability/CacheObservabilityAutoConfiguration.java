@@ -59,7 +59,7 @@ public class CacheObservabilityAutoConfiguration {
     HealthIndicator cacheHealthIndicator(ObjectProvider<FireflyCacheManager> managerProvider,
                                          ObjectProvider<CacheAdapter> adapterProvider) {
         CacheAdapter adapter = adapterProvider.getIfUnique();
-        FireflyCacheManager manager = managerProvider.getIfAvailable();
+        FireflyCacheManager manager = managerProvider.getIfUnique();
         String adapterName = manager != null ? "firefly" : "cache";
         return new CacheHealthIndicator(adapter, adapterName);
     }
