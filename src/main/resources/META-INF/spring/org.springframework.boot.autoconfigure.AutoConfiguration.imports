@@ -1,3 +1,2 @@
 org.fireflyframework.cache.config.CacheAutoConfiguration
-org.fireflyframework.cache.config.RedisCacheAutoConfiguration
 org.fireflyframework.cache.observability.CacheObservabilityAutoConfiguration

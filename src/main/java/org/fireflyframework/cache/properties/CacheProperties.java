@@ -87,6 +87,13 @@ public class CacheProperties {
     private RedisConfig redis = new RedisConfig();
 
     /**
+     * PostgreSQL cache configuration.
+     */
+    @Valid
+    @NotNull
+    private PostgresConfig postgres = new PostgresConfig();
+
+    /**
      * Smart (L1+L2) cache configuration.
      */
     @Valid
@@ -241,6 +248,87 @@ public class CacheProperties {
          * Additional Redis configuration properties.
          */
         private Map<String, String> properties = new HashMap<>();
+    }
+
+    /**
+     * PostgreSQL cache configuration.
+     */
+    @Data
+    public static class PostgresConfig {
+        /**
+         * Cache name for the Postgres adapter.
+         */
+        private String cacheName = "default";
+
+        /**
+         * Whether Postgres cache is enabled.
+         */
+        private boolean enabled = false;
+
+        /**
+         * PostgreSQL server host.
+         */
+        private String host = "localhost";
+
+        /**
+         * PostgreSQL server port.
+         */
+        private int port = 5432;
+
+        /**
+         * PostgreSQL database name.
+         */
+        private String database;
+
+        /**
+         * PostgreSQL username.
+         */
+        private String username;
+
+        /**
+         * PostgreSQL password.
+         */
+        private String password;
+
+        /**
+         * PostgreSQL schema for cache tables.
+         */
+        private String schema = "public";
+
+        /**
+         * Table name used to store cache entries.
+         */
+        private String cacheTable = "firefly_cache_entries";
+
+        /**
+         * Key prefix for all cache entries.
+         */
+        private String keyPrefix = "";
+
+        /**
+         * Default TTL for cache entries.
+         */
+        private Duration defaultTtl = Duration.ofMinutes(30);
+
+        /**
+         * Whether to auto-create the cache schema/table on startup.
+         */
+        private boolean autoCreateSchema = true;
+
+        /**
+         * Maximum number of connections in the pool.
+         */
+        private int maxPoolSize = 10;
+
+        /**
+         * Minimum number of connections in the pool.
+         */
+        private int minPoolSize = 1;
+
+        /**
+         * Additional Postgres configuration properties.
+         */
+        private Map<String, Object> properties = new HashMap<>();
     }
 
     /**

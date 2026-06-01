@@ -28,7 +28,6 @@ import org.fireflyframework.cache.serialization.JsonCacheSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,10 +51,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
  *   <li>Metrics collection via Micrometer</li>
  * </ul>
  * <p>
- * <b>Note:</b> Redis support is optional and configured separately in
- * {@link RedisCacheAutoConfiguration} when Redis dependencies are present.
- *
- * @see RedisCacheAutoConfiguration
+ * <b>Note:</b> Distributed providers (Redis, Hazelcast, JCache, Postgres) are
+ * optional and shipped as separate adapter modules. When their dependencies/beans
+ * are present on the classpath, they are discovered via the {@code CacheProviderFactory}
+ * SPI and the reflectively-resolved provider beans wired by this configuration.
  */
 @AutoConfiguration
 @ConditionalOnProperty(prefix = "firefly.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -93,19 +92,25 @@ public class CacheAutoConfiguration {
      * This factory is used by other modules (like fireflyframework-web, microservices, etc.) to create
      * their own cache managers with independent configurations and key prefixes.
      * <p>
-     * This version is used when Redis dependencies are available on the classpath.
+     * Distributed provider beans (Redis, Hazelcast, JCache, R2DBC/Postgres) are resolved
+     * reflectively so that core has no compile-time dependency on any provider. When an
+     * adapter module is present on the classpath and contributes the corresponding bean,
+     * the matching {@code CacheProviderFactory} SPI implementation participates automatically.
      */
     @Bean
-    @ConditionalOnClass(name = "org.springframework.data.redis.connection.ReactiveRedisConnectionFactory")
     @ConditionalOnMissingBean
-    public org.fireflyframework.cache.factory.CacheManagerFactory cacheManagerFactoryWithRedis(
+    public org.fireflyframework.cache.factory.CacheManagerFactory cacheManagerFactory(
             CacheProperties properties,
             @Qualifier("cacheObjectMapper") ObjectMapper objectMapper,
-            org.springframework.beans.factory.ObjectProvider<org.springframework.data.redis.connection.ReactiveRedisConnectionFactory> redisConnectionFactoryProvider,
             org.springframework.context.ApplicationContext applicationContext) {
-        log.info("Creating CacheManagerFactory (with Redis support)");
-        org.springframework.data.redis.connection.ReactiveRedisConnectionFactory redisConnectionFactory =
-                redisConnectionFactoryProvider.getIfAvailable();
+        log.info("Creating CacheManagerFactory");
+
+        // Resolve optional Redis ReactiveRedisConnectionFactory via reflection
+        Object redisConnectionFactory = null;
+        try {
+            Class<?> redisClazz = Class.forName("org.springframework.data.redis.connection.ReactiveRedisConnectionFactory");
+            redisConnectionFactory = applicationContext.getBeanProvider(redisClazz).getIfAvailable();
+        } catch (ClassNotFoundException ignored) { }
 
         // Resolve optional HazelcastInstance via reflection
         Object hazelcastInstance = null;
@@ -124,6 +129,13 @@ public class CacheAutoConfiguration {
                 jcacheClazz = Class.forName("jakarta.cache.CacheManager");
             }
             jcacheManager = applicationContext.getBeanProvider(jcacheClazz).getIfAvailable();
+        } catch (ClassNotFoundException ignored) { }
+
+        // Resolve optional R2DBC ConnectionFactory (Postgres) via reflection
+        Object r2dbcConnectionFactory = null;
+        try {
+            Class<?> cf = Class.forName("io.r2dbc.spi.ConnectionFactory");
+            r2dbcConnectionFactory = applicationContext.getBeanProvider(cf).getIfAvailable();
         } catch (ClassNotFoundException ignored) { }
 
         return new org.fireflyframework.cache.factory.CacheManagerFactory(
@@ -131,48 +143,8 @@ public class CacheAutoConfiguration {
                 objectMapper,
                 redisConnectionFactory,
                 hazelcastInstance,
-                jcacheManager
-        );
-    }
-
-    /**
-     * Creates the CacheManagerFactory that can create multiple independent cache managers.
-     * <p>
-     * This version is used when Redis dependencies are NOT available, providing Caffeine-only support.
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public org.fireflyframework.cache.factory.CacheManagerFactory cacheManagerFactoryCaffeineOnly(
-            CacheProperties properties,
-            @Qualifier("cacheObjectMapper") ObjectMapper objectMapper,
-            org.springframework.context.ApplicationContext applicationContext) {
-        log.info("Creating CacheManagerFactory (Caffeine-only, Redis not available)");
-
-        // Resolve optional HazelcastInstance via reflection
-        Object hazelcastInstance = null;
-        try {
-            Class<?> hzClazz = Class.forName("com.hazelcast.core.HazelcastInstance");
-            hazelcastInstance = applicationContext.getBeanProvider(hzClazz).getIfAvailable();
-        } catch (ClassNotFoundException ignored) { }
-
-        // Resolve optional JCache CacheManager (javax or jakarta)
-        Object jcacheManager = null;
-        try {
-            Class<?> jcacheClazz;
-            try {
-                jcacheClazz = Class.forName("javax.cache.CacheManager");
-            } catch (ClassNotFoundException ex) {
-                jcacheClazz = Class.forName("jakarta.cache.CacheManager");
-            }
-            jcacheManager = applicationContext.getBeanProvider(jcacheClazz).getIfAvailable();
-        } catch (ClassNotFoundException ignored) { }
-
-        return new org.fireflyframework.cache.factory.CacheManagerFactory(
-                properties,
-                objectMapper,
-                null,  // No Redis support
-                hazelcastInstance,
-                jcacheManager
+                jcacheManager,
+                r2dbcConnectionFactory
         );
     }
 

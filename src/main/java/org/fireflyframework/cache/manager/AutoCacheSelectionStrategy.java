@@ -99,6 +99,7 @@ public class AutoCacheSelectionStrategy implements CacheSelectionStrategy {
     private int getTypePriority(CacheType cacheType) {
         return switch (cacheType) {
             case REDIS -> 1;       // Distributed and persistent
+            case POSTGRES -> 1;    // Distributed and persistent
             case HAZELCAST -> 2;   // Distributed in-memory grid
             case JCACHE -> 3;      // Standard JCache provider
             case CAFFEINE -> 4;    // Fast in-memory (default when no distributed provider configured)
